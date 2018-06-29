@@ -37,13 +37,13 @@ import { addTodo } from '../../actions/';
 @Subscribe
 @Component('.example')
 class Example {
-	init() {
-        dispatch(addTodo('New task'));
-	}
+  init() {
+    dispatch(addTodo('New task'));
+  }
 
-	onStateChange() {
-        // put down your logic here
-    }
+  onStateChange() {
+    // put down your logic here
+  }
 }
 ```
 
@@ -64,25 +64,29 @@ import { Status } from './status';
 @Subscribe
 @Component('.example-2')
 class Example2 {
-	render() {
-		reactDom.render(
-			(<div>
-				<input type="text"/>
-				<div className="container">
-					<Status/>
-					{getState().todos.map((item) => <p key={item.id}>{item.id}. {item.title}</p>)}
-				</div>
-			</div>), this.$element.first());
-	}
+  render() {
+    reactDom.render(
+      (
+        <div>
+          <input type="text"/>
+          <div className="container">
+            <Status/>
+            {getState().todos.map((item) => <p key={item.id}>{item.id}. {item.title}</p>)}
+          </div>
+        </div>
+      ),
+      this.$element.first(),
+    );
+  }
 }
 ```
 
 ### API
 
-* @Subscribe - required decorator to bind strudel-redux to the component
-* initStore(store) - initializing redux store
-* onStateChange() - this method is called after update the state
-* getState() - returns the current state tree of your application
-* dispatch(action) - dispatches action
-* replaceReducer(nextReducer) - replaces the reducer currently used by the store to calculate the state
-* render() - this method is called after update the state
+* `@Subscribe` - required decorator to bind strudel-redux to the component
+* `initStore(store)` - initializing redux store
+* `onStateChange()` - this method is called after update the state
+* `getState()` - returns the current state tree of your application
+* `dispatch(action)` - dispatches action
+* `replaceReducer(nextReducer)` - replaces the reducer currently used by the store to calculate the state
+* `render()` - this method is called after update the state
