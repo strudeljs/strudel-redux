@@ -4,7 +4,7 @@
 	(factory((global.strudelRedux = {})));
 }(this, (function (exports) { 'use strict';
 
-var bindedMethods = ['init', 'beforeDestroy', '_react', 'onStateChange'];
+var bindedMethods = ['init', 'beforeDestroy', 'onStateChange', '_react'];
 
 var reactiveMixin = {
   init: function init() {
@@ -12,20 +12,17 @@ var reactiveMixin = {
 
     this._react();
 
-    this.unsubscribe = window.__reduxStore.subscribe(function () {
+    this._unsubscribe = window.__reduxStore.subscribe(function () {
       _this.onStateChange();
       _this._react();
     });
   },
   beforeDestroy: function beforeDestroy() {
-    this.unsubscribe();
+    this._unsubscribe();
   },
   onStateChange: function onStateChange() {
     return true;
   },
-
-
-  // React Virtual-DOM
   _react: function _react() {
     if (!this.render) return;
 

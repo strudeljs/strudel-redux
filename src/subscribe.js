@@ -1,17 +1,17 @@
-const bindedMethods = ['init', 'beforeDestroy', 'onStateChange', '_react',];
+const bindedMethods = ['init', 'beforeDestroy', 'onStateChange', '_react'];
 
 const reactiveMixin = {
   init() {
     this._react();
 
-    this.unsubscribe = window.__reduxStore.subscribe(() => {
+    this._unsubscribe = window.__reduxStore.subscribe(() => {
       this.onStateChange();
       this._react();
     });
   },
 
   beforeDestroy() {
-    this.unsubscribe();
+    this._unsubscribe();
   },
 
   onStateChange() {
