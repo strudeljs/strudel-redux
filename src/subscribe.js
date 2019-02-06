@@ -3,7 +3,7 @@ export const subscribedStateChanged = (observedState, stateMemory) => Object
   .some(([key, value]) => stateMemory[key] !== value);
 
 /* eslint-disable no-param-reassign, func-names */
-export const Subscribe = (store, {observed, statics: () => {} }) => function (target) {
+export const Subscribe = (store, { observed, statics = () => {} }) => function (target) {
   let stateMemory = observed(store.getState());
 
   Object.defineProperty(target.prototype, 'dispatch', {
