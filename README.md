@@ -20,7 +20,7 @@ yarn add strudel-redux
 
 ```
 import { Component, Evt } from 'strudel';
-import { Subscribe, this.dispatch } from 'strudel-redux';
+import { Subscribe, dispatch } from 'strudel-redux';
 import { toggleStockStatus } from '../../actions/';
 
 @Subscribe({
