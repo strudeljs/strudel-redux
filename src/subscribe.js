@@ -4,7 +4,6 @@ export const subscribedStateChanged = (observedState, stateMemory) => Object
 
 /* eslint-disable no-param-reassign, func-names */
 export const Subscribe = (store, {observed, statics: () => {} }) => function (target) {
-  debugger;
   let stateMemory = observed(store.getState());
 
   Object.defineProperty(target.prototype, 'dispatch', {
@@ -20,14 +19,11 @@ export const Subscribe = (store, {observed, statics: () => {} }) => function (ta
     orgInit.call(this);
 
     store.subscribe(() => {
-      debugger;
       const storeState = store.getState();
       const observedState = observed(storeState);
       const stateChanged = subscribedStateChanged(observedState, stateMemory);
       
-      debugger;
       if (stateChanged) {
-        debugger;
         const staticState = statics(storeState);
         this.onStateChange({...observedState, ...staticState});
 

@@ -19,14 +19,13 @@
     "url": "https://github.com/strudeljs/strudel-redux/issues"
   },
   "homepage": "https://github.com/strudeljs/strudel-redux#readme",
-  "dependencies": {
-    "@babel/preset-env": "^7.3.1",
-    "redux": "^4.0.1"
-  },
+  "dependencies": {},
   "devDependencies": {
+    "@babel/preset-env": "^7.3.1",
     "babel-core": "^6.26.0",
     "babel-preset-es2015-rollup": "^3.0.0",
     "jest": "^24.1.0",
+    "redux": "^4.0.1",
     "redux-mock-store": "^1.5.3",
     "rollup": "^0.52.1",
     "rollup-plugin-babel": "^3.0.2",

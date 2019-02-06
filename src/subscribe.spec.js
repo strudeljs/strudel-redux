@@ -44,10 +44,7 @@ describe('subscribedStateChanged', () => {
 
     test('should return observed and static state', () => {
       class TestComponent {
-        onStateChange() {
-          debugger;
-          return '';
-        }
+        onStateChange() {}
         init() {}
       }
       const component = new TestComponent();
