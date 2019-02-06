@@ -1,67 +1,42 @@
-const bindedMethods = ['init', 'beforeDestroy', 'onStateChange', '_react'];
+export const subscribedStateChanged = (observedState, stateMemory) => Object
+  .entries(observedState)
+  .some(([key, value]) => stateMemory[key] !== value);
 
-const reactiveMixin = {
-  init() {
-    this._react();
+/* eslint-disable no-param-reassign, func-names */
+export const Subscribe = (store, {observed, statics: () => {} }) => function (target) {
+  debugger;
+  let stateMemory = observed(store.getState());
 
-    this._unsubscribe = window.__reduxStore.subscribe(() => {
-      this.onStateChange();
-      this._react();
-    });
-  },
-
-  beforeDestroy() {
-    this._unsubscribe();
-  },
-
-  onStateChange() {
-    return true;
-  },
-
-  _react() {
-    if (!this.render) return;
-
-    this.render(this);
-  }
-};
-
-const patch = (target, funcName) => {
-  const base = target[funcName];
-  const mixinFunc = reactiveMixin[funcName];
-
-  const f = !base ? mixinFunc : function () {
-    base.apply(this, arguments);
-    mixinFunc.apply(this, arguments);
-  }
-
-  target[funcName] = f;
-}
-
-const mixin = (target) => {
-  bindedMethods.forEach((funcName) => {
-    patch(target, funcName);
+  Object.defineProperty(target.prototype, 'dispatch', {
+    value(action) {
+      return store.dispatch(action);
+    },
+    enumerable: true,
   });
-}
 
-const getState = () => window.__reduxStore.getState();
-const dispatch = (e) => window.__reduxStore.dispatch(e);
-const replaceReducer = (e) => window.__reduxStore.replaceReducer(e);
+  const orgInit = target.prototype.init;
 
-const initStore = (store) => {
-  window.__reduxStore = store;
-  return window.__reduxStore;
-};
+  target.prototype.init = function () {
+    orgInit.call(this);
 
-const subscribe = (arg) => {
-  const componentClass = arg;
-  const target = componentClass.prototype;
+    store.subscribe(() => {
+      debugger;
+      const storeState = store.getState();
+      const observedState = observed(storeState);
+      const stateChanged = subscribedStateChanged(observedState, stateMemory);
+      
+      debugger;
+      if (stateChanged) {
+        debugger;
+        const staticState = statics(storeState);
+        this.onStateChange({...observedState, ...staticState});
 
-  if (!target || !target.isStrudelClass) {
-    throw new Error('Please pass a valid component to "Subscribe"');
-  }
+        stateMemory = observedState;
+      }
+    });
+  };
 
-  mixin(target);
   return target;
 };
 
-export { subscribe as Subscribe, initStore, getState, dispatch, replaceReducer };
+// eslint-enable no-param-reassign, func-names
