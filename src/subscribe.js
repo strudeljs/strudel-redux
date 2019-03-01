@@ -14,22 +14,29 @@ export const Subscribe = (store, { observed, statics = () => {} }) => function (
   });
 
   const orgInit = target.prototype.init;
+  const orgTeardown = target.prototype.$teardown;
+  let unsubscribe;
 
   target.prototype.init = function () {
     orgInit.call(this);
 
-    store.subscribe(() => {
+    unsubscribe = store.subscribe(() => {
       const storeState = store.getState();
       const observedState = observed(storeState);
       const stateChanged = subscribedStateChanged(observedState, stateMemory);
-      
+
       if (stateChanged) {
         const staticState = statics(storeState);
-        this.onStateChange({...observedState, ...staticState});
+        this.onStateChange({ ...observedState, ...staticState });
 
         stateMemory = observedState;
       }
     });
+  };
+
+  target.prototype.$teardown = function () {
+    unsubscribe();
+    orgTeardown.call(this);
   };
 
   return target;
