@@ -20,10 +20,10 @@ yarn add strudel-redux
 
 ```
 import { Component, Evt } from 'strudel';
-import { Subscribe, dispatch } from 'strudel-redux';
+import { Subscribe } from 'strudel-redux';
 import { toggleStockStatus } from '../../actions/';
 
-@Subscribe({
+@Subscribe(store, {
   observed: state => ({ 
     price: state.productDetails.price,
   }),
@@ -34,7 +34,7 @@ import { toggleStockStatus } from '../../actions/';
 @Component('.example')
 class Example {
   init() {
-    this.dispatch(toggleStockStatus());
+    store.dispatch(toggleStockStatus());
   }
 
   onStateChange({ price, stockStatus }) {
