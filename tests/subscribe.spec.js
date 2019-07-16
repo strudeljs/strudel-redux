@@ -1,4 +1,4 @@
-import { Subscribe } from '../src/subscribe';
+import Subscribe from '../src/subscribe';
 
 
 describe('Subscribe', () => {
@@ -7,8 +7,8 @@ describe('Subscribe', () => {
       testMethod() {}
     }
 
-    const observed = state => {};
-    const passive = state => {};
+    const observed = () => {};
+    const passive = () => {};
 
     Subscribe({ observed, passive })(
       TestComponent.prototype,
@@ -19,6 +19,7 @@ describe('Subscribe', () => {
     expect(TestComponent.prototype.subscriptionQueue).toHaveLength(1);
     expect(TestComponent.prototype.subscriptionQueue[0].observed).toBe(observed);
     expect(TestComponent.prototype.subscriptionQueue[0].passive).toBe(passive);
-    expect(TestComponent.prototype.subscriptionQueue[0].method).toBe(TestComponent.prototype.testMethod);
+    expect(TestComponent.prototype.subscriptionQueue[0].method)
+      .toBe(TestComponent.prototype.testMethod);
   });
 });

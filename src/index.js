@@ -1,2 +1,2 @@
-export * from './attachStore';
-export * from './subscribe';
+export { default as AttachStore } from './attachStore';
+export { default as Subscribe } from './subscribe';

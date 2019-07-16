@@ -1,4 +1,4 @@
-import {createStore} from "redux";
+import { createStore } from 'redux';
 
 const actions = {
   observed: 'MockObservedAction',
@@ -27,4 +27,4 @@ const store = createStore((state = initialState, action) => {
   }
 });
 
-export {actions, initialState, store};
+export { actions, initialState, store };

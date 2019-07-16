@@ -1,4 +1,4 @@
-import {isObservedChanged} from '../src/helpers';
+import isObservedChanged from '../src/helpers';
 import { actions, store, initialState } from './initials';
 
 describe('isObservedChanged', () => {

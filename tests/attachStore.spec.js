@@ -1,5 +1,5 @@
-import {AttachStore} from '../src/attachStore';
-import { actions, store, initialState } from './initials';
+import AttachStore from '../src/attachStore';
+import { actions, store } from './initials';
 
 describe('attachStore', () => {
   test('TestComponent.testMethod should be called', () => {
@@ -23,7 +23,9 @@ describe('attachStore', () => {
       observed,
       passive,
       method: TestComponent.prototype.testMethod,
-      }];
+    }];
+
+    TestComponent.prototype.init = () => {};
 
     AttachStore(store)(TestComponent);
     component.init();
