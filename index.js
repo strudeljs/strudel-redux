@@ -4,82 +4,135 @@
 	(factory((global.strudelRedux = {})));
 }(this, (function (exports) { 'use strict';
 
-var bindedMethods = ['init', 'beforeDestroy', 'onStateChange', '_react'];
-
-var reactiveMixin = {
-  init: function init() {
-    var _this = this;
-
-    this._react();
-
-    this._unsubscribe = window.__reduxStore.subscribe(function () {
-      _this.onStateChange();
-      _this._react();
+function _defineProperty(obj, key, value) {
+  if (key in obj) {
+    Object.defineProperty(obj, key, {
+      value: value,
+      enumerable: true,
+      configurable: true,
+      writable: true
     });
-  },
-  beforeDestroy: function beforeDestroy() {
-    this._unsubscribe();
-  },
-  onStateChange: function onStateChange() {
-    return true;
-  },
-  _react: function _react() {
-    if (!this.render) return;
-
-    this.render(this);
+  } else {
+    obj[key] = value;
   }
-};
 
-var patch = function patch(target, funcName) {
-  var base = target[funcName];
-  var mixinFunc = reactiveMixin[funcName];
+  return obj;
+}
 
-  var f = !base ? mixinFunc : function () {
-    base.apply(this, arguments);
-    mixinFunc.apply(this, arguments);
-  };
+function _objectSpread(target) {
+  for (var i = 1; i < arguments.length; i++) {
+    var source = arguments[i] != null ? arguments[i] : {};
+    var ownKeys = Object.keys(source);
 
-  target[funcName] = f;
-};
+    if (typeof Object.getOwnPropertySymbols === 'function') {
+      ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) {
+        return Object.getOwnPropertyDescriptor(source, sym).enumerable;
+      }));
+    }
 
-var mixin = function mixin(target) {
-  bindedMethods.forEach(function (funcName) {
-    patch(target, funcName);
+    ownKeys.forEach(function (key) {
+      _defineProperty(target, key, source[key]);
+    });
+  }
+
+  return target;
+}
+
+function _slicedToArray(arr, i) {
+  return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest();
+}
+
+function _arrayWithHoles(arr) {
+  if (Array.isArray(arr)) return arr;
+}
+
+function _iterableToArrayLimit(arr, i) {
+  var _arr = [];
+  var _n = true;
+  var _d = false;
+  var _e = undefined;
+
+  try {
+    for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+      _arr.push(_s.value);
+
+      if (i && _arr.length === i) break;
+    }
+  } catch (err) {
+    _d = true;
+    _e = err;
+  } finally {
+    try {
+      if (!_n && _i["return"] != null) _i["return"]();
+    } finally {
+      if (_d) throw _e;
+    }
+  }
+
+  return _arr;
+}
+
+function _nonIterableRest() {
+  throw new TypeError("Invalid attempt to destructure non-iterable instance");
+}
+
+var subscribedStateChanged = function subscribedStateChanged(observedState, stateMemory) {
+  return Object.entries(observedState).some(function (_ref) {
+    var _ref2 = _slicedToArray(_ref, 2),
+        key = _ref2[0],
+        value = _ref2[1];
+
+    return stateMemory[key] !== value;
   });
 };
+/* eslint-disable no-param-reassign, func-names */
 
-var getState = function getState() {
-  return window.__reduxStore.getState();
-};
-var dispatch = function dispatch(e) {
-  return window.__reduxStore.dispatch(e);
-};
-var replaceReducer = function replaceReducer(e) {
-  return window.__reduxStore.replaceReducer(e);
-};
+var Subscribe = function Subscribe(store, _ref3) {
+  var observed = _ref3.observed,
+      _ref3$statics = _ref3.statics,
+      statics = _ref3$statics === void 0 ? function () {} : _ref3$statics;
+  return function (target) {
+    var stateMemory = observed(store.getState());
+    Object.defineProperty(target.prototype, 'dispatch', {
+      value: function value(action) {
+        return store.dispatch(action);
+      },
+      enumerable: true
+    });
+    var orgInit = target.prototype.init;
+    var orgTeardown = target.prototype.$teardown;
+    var unsubscribe;
 
-var initStore = function initStore(store) {
-  window.__reduxStore = store;
-  return window.__reduxStore;
-};
+    target.prototype.init = function () {
+      var _this = this;
 
-var subscribe = function subscribe(arg) {
-  var componentClass = arg;
-  var target = componentClass.prototype;
+      orgInit.call(this);
+      var unsubscribe = store.subscribe(function () {
+        var storeState = store.getState();
+        var observedState = observed(storeState);
+        var stateChanged = subscribedStateChanged(observedState, stateMemory);
 
-  if (!target || !target.isStrudelClass) {
-    throw new Error('Please pass a valid component to "Subscribe"');
-  }
+        if (stateChanged) {
+          var staticState = statics(storeState);
 
-  mixin(target);
-  return target;
-};
+          _this.onStateChange(_objectSpread({}, observedState, staticState));
 
-exports.Subscribe = subscribe;
-exports.initStore = initStore;
-exports.getState = getState;
-exports.dispatch = dispatch;
-exports.replaceReducer = replaceReducer;
+          stateMemory = observedState;
+        }
+      });
+    };
+
+    target.prototype.$teardown = function () {
+      unsubscribe();
+      orgTeardown.call(this);
+    };
+
+    return target;
+  };
+}; // eslint-enable no-param-reassign, func-names
+
+exports.subscribedStateChanged = subscribedStateChanged;
+exports.Subscribe = Subscribe;
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
