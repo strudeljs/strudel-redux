@@ -20,36 +20,36 @@ yarn add strudel-redux
 
 ```
 import { Component, Evt } from 'strudel';
-import { Subscribe } from 'strudel-redux';
+import { Subscribe, AttachStore }  from 'strudel-redux';
 import { toggleStockStatus } from '../../actions/';
 
-@Subscribe(store, {
-  observed: state => ({ 
-    price: state.productDetails.price,
-  }),
-  statics: state => ({
-   stockStatus: state.productDetails.stockStatus,
-  })
-})
+@AttachStore(store)
 @Component('.example')
 class Example {
   init() {
     store.dispatch(toggleStockStatus());
   }
-
-  onStateChange({ price, stockStatus }) {
+  
+  @Subscribe({
+    observed: state => ({ 
+      price: state.productDetails.price,
+    }),
+    passive: state => ({
+      stockStatus: state.productDetails.stockStatus,
+    })
+  })
+  onPriceChange({ price, stockStatus }) {
     // put down your logic here
   }
-}
+})
 ```
 
 ### API
-
-* `@Subscribe(store, callbackFunction)` - required decorator to bind strudel-redux to component
-* `onStateChange(properties)` - added method called on change of properties declared as observed
-* `callbackFunction: { observed: () => {}, statics: () => {}` - functions that will return mapped state properties
-* `observed` method is called on store change, and will trigger `onStateChange` if returned value differs from previous
-* `statics` method is called whenever `observed` function will detect change, and provides additional props that does not trigger onStateChange call
+* `@Component(selector)` - is necessary for 
+* `@AttachStore(store)` - required decorator to bind store to component.
+* `@Subscribe: { observed: () => {}, passive: () => {}` - decorator that makes subscription to the store. Decorated method is invoked with values from both observed and passive properties.
+    * `observed` method that maps state to variables. Any change on one of these properties invokes decorated method.
+    * `passive` method that maps state to variables. Any change to one of these properties doesn't invoke decorated method. 
 
 ## License
 
