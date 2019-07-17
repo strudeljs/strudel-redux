@@ -45,7 +45,6 @@ class Example {
 ```
 
 ### API
-* `@Component(selector)` - is necessary for package to work.
 * `@AttachStore(store)` - required decorator to bind store to component.
 * `@Subscribe: { observed: () => {}, passive: () => {}` - decorator that makes subscription to the store. Decorated method is invoked with values returned from both `observed` and `passive` methods.
     * `observed` method that maps state to variables. Any change on one of these properties invokes decorated method.
