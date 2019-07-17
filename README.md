@@ -48,7 +48,7 @@ class Example {
 * `@AttachStore(store)` - required decorator to bind store to component.
 * `@Subscribe: { observed: () => {}, passive: () => {}` - decorator that makes subscription to the store. Decorated method is invoked with values returned from both `observed` and `passive` methods.
     * `observed` method that maps state to variables. Any change on one of these properties invokes decorated method.
-    * `passive` method that maps state to variables. Any change to one of these properties doesn't invoke decorated method. 
+    * (optional) `passive` optional method that maps state to variables. Any change to one of these properties doesn't invoke decorated method. 
 
 ## License
 
