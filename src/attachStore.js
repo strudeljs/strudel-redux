@@ -2,7 +2,7 @@ import isObservedChanged from './helpers';
 
 function AttachStore(store) {
   return function AttachStoreToComponent(target) {
-    const { subscriptionQueue } = target.prototype;
+    const { subscriptionQueue = [] } = target.prototype;
 
     let currentState = store.getState();
 
@@ -24,14 +24,14 @@ function AttachStore(store) {
 
     // eslint-disable-next-line no-param-reassign
     target.prototype.init = function init() {
-      originalInit();
+      originalInit.call(this);
       this.unsubscribe = store.subscribe(handleStoreChange.bind(this));
     };
 
     // eslint-disable-next-line no-param-reassign
     target.prototype.beforeDestroy = function beforeDestroy() {
       this.unsubscribe();
-      originalBeforeDestroy();
+      originalBeforeDestroy.call(this);
     };
   };
 }
