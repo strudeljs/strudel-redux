@@ -17,6 +17,8 @@ function Subscribe({
       target.subscriptionQueue = [];
     }
     target.subscriptionQueue.push(queueElement);
+
+    return descriptor;
   };
 }
 

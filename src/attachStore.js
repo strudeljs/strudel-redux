@@ -10,11 +10,13 @@ function AttachStore(store) {
       const previousState = currentState;
       currentState = store.getState();
 
-      subscriptionQueue.forEach(({ observed, passive, method }) => {
-        if (isObservedChanged(observed(previousState), observed(currentState))) {
-          method.call(this, Object.assign({}, observed(currentState), passive(currentState)));
-        }
-      });
+      if (this.initialized) {
+        subscriptionQueue.forEach(({ observed, passive, method }) => {
+          if (isObservedChanged(observed(previousState), observed(currentState))) {
+            method.call(this, Object.assign({}, observed(currentState), passive(currentState)));
+          }
+        });
+      }
     }
 
     const {
@@ -25,6 +27,7 @@ function AttachStore(store) {
     // eslint-disable-next-line no-param-reassign
     target.prototype.init = function init() {
       originalInit.call(this);
+      this.initialized = true;
       this.unsubscribe = store.subscribe(handleStoreChange.bind(this));
     };
 
