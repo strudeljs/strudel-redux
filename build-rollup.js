@@ -27,7 +27,7 @@ plugins.push(filesize());
 
 builds.forEach((config) => {
   rollup.rollup({
-      input: 'src/subscribe.js',
+      input: 'src/index.js',
       external: externals,
       plugins: plugins
     })
@@ -40,7 +40,7 @@ builds.forEach((config) => {
         globals: {
           strudel: 'strudel',
         }
-      }
+      };
 
       return bundle.write(options);
     }).catch(function (reason) {
