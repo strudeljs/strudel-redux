@@ -4,134 +4,80 @@
 	(factory((global.strudelRedux = {})));
 }(this, (function (exports) { 'use strict';
 
-function _defineProperty(obj, key, value) {
-  if (key in obj) {
-    Object.defineProperty(obj, key, {
-      value: value,
-      enumerable: true,
-      configurable: true,
-      writable: true
-    });
-  } else {
-    obj[key] = value;
-  }
-
-  return obj;
-}
-
-function _objectSpread(target) {
-  for (var i = 1; i < arguments.length; i++) {
-    var source = arguments[i] != null ? arguments[i] : {};
-    var ownKeys = Object.keys(source);
-
-    if (typeof Object.getOwnPropertySymbols === 'function') {
-      ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) {
-        return Object.getOwnPropertyDescriptor(source, sym).enumerable;
-      }));
-    }
-
-    ownKeys.forEach(function (key) {
-      _defineProperty(target, key, source[key]);
-    });
-  }
-
-  return target;
-}
-
-function _slicedToArray(arr, i) {
-  return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest();
-}
-
-function _arrayWithHoles(arr) {
-  if (Array.isArray(arr)) return arr;
-}
-
-function _iterableToArrayLimit(arr, i) {
-  var _arr = [];
-  var _n = true;
-  var _d = false;
-  var _e = undefined;
-
-  try {
-    for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
-      _arr.push(_s.value);
-
-      if (i && _arr.length === i) break;
-    }
-  } catch (err) {
-    _d = true;
-    _e = err;
-  } finally {
-    try {
-      if (!_n && _i["return"] != null) _i["return"]();
-    } finally {
-      if (_d) throw _e;
-    }
-  }
-
-  return _arr;
-}
-
-function _nonIterableRest() {
-  throw new TypeError("Invalid attempt to destructure non-iterable instance");
-}
-
-var subscribedStateChanged = function subscribedStateChanged(observedState, stateMemory) {
-  return Object.entries(observedState).some(function (_ref) {
-    var _ref2 = _slicedToArray(_ref, 2),
-        key = _ref2[0],
-        value = _ref2[1];
-
-    return stateMemory[key] !== value;
+function isObservedChanged(currentObserved, previousObserved) {
+  return !Object.keys(currentObserved).every(function (key) {
+    return currentObserved[key] === previousObserved[key];
   });
-};
-/* eslint-disable no-param-reassign, func-names */
+}
 
-var Subscribe = function Subscribe(store, _ref3) {
-  var observed = _ref3.observed,
-      _ref3$statics = _ref3.statics,
-      statics = _ref3$statics === void 0 ? function () {} : _ref3$statics;
-  return function (target) {
-    var stateMemory = observed(store.getState());
-    Object.defineProperty(target.prototype, 'dispatch', {
-      value: function value(action) {
-        return store.dispatch(action);
-      },
-      enumerable: true
-    });
-    var orgInit = target.prototype.init;
-    var orgTeardown = target.prototype.$teardown;
-    var unsubscribe;
+function AttachStore(store) {
+  return function AttachStoreToComponent(target) {
+    var _target$prototype$sub = target.prototype.subscriptionQueue,
+        subscriptionQueue = _target$prototype$sub === void 0 ? [] : _target$prototype$sub;
+    var currentState = store.getState();
 
-    target.prototype.init = function () {
+    function handleStoreChange() {
       var _this = this;
 
-      orgInit.call(this);
-      var unsubscribe = store.subscribe(function () {
-        var storeState = store.getState();
-        var observedState = observed(storeState);
-        var stateChanged = subscribedStateChanged(observedState, stateMemory);
+      var previousState = currentState;
+      currentState = store.getState();
+      subscriptionQueue.forEach(function (_ref) {
+        var observed = _ref.observed,
+            passive = _ref.passive,
+            method = _ref.method;
 
-        if (stateChanged) {
-          var staticState = statics(storeState);
-
-          _this.onStateChange(_objectSpread({}, observedState, staticState));
-
-          stateMemory = observedState;
+        if (isObservedChanged(observed(previousState), observed(currentState))) {
+          method.call(_this, Object.assign({}, observed(currentState), passive(currentState)));
         }
       });
-    };
+    }
 
-    target.prototype.$teardown = function () {
-      unsubscribe();
-      orgTeardown.call(this);
-    };
+    var _target$prototype = target.prototype,
+        originalInit = _target$prototype.init,
+        originalBeforeDestroy = _target$prototype.beforeDestroy; // eslint-disable-next-line no-param-reassign
 
-    return target;
+    target.prototype.init = function init() {
+      originalInit.call(this);
+      this.unsubscribe = store.subscribe(handleStoreChange.bind(this));
+    }; // eslint-disable-next-line no-param-reassign
+
+
+    target.prototype.beforeDestroy = function beforeDestroy() {
+      this.unsubscribe();
+      originalBeforeDestroy.call(this);
+    };
   };
-}; // eslint-enable no-param-reassign, func-names
+}
 
-exports.subscribedStateChanged = subscribedStateChanged;
+function Subscribe() {
+  var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
+      observed = _ref.observed,
+      _ref$passive = _ref.passive,
+      passive = _ref$passive === void 0 ? function () {} : _ref$passive;
+
+  return function addSubscriptionToQueue(target, name, descriptor) {
+    if (typeof observed !== 'function') {
+      // eslint-disable-next-line no-console
+      console.error('Observed must be a function that maps state to variables');
+    }
+
+    var queueElement = {
+      observed: observed,
+      passive: passive,
+      method: descriptor.value
+    };
+
+    if (!target.subscriptionQueue) {
+      // eslint-disable-next-line no-param-reassign
+      target.subscriptionQueue = [];
+    }
+
+    target.subscriptionQueue.push(queueElement);
+    return descriptor;
+  };
+}
+
+exports.AttachStore = AttachStore;
 exports.Subscribe = Subscribe;
 
 Object.defineProperty(exports, '__esModule', { value: true });
