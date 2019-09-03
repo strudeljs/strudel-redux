@@ -14,22 +14,24 @@ function AttachStore(store) {
   return function AttachStoreToComponent(target) {
     var _target$prototype$sub = target.prototype.subscriptionQueue,
         subscriptionQueue = _target$prototype$sub === void 0 ? [] : _target$prototype$sub;
-    var currentState = store.getState();
 
-    function handleStoreChange() {
-      var _this = this;
+    function handleStoreChangeWrapper() {
+      var currentState = store.getState();
+      return function handleStoreChange() {
+        var _this = this;
 
-      var previousState = currentState;
-      currentState = store.getState();
-      subscriptionQueue.forEach(function (_ref) {
-        var observed = _ref.observed,
-            passive = _ref.passive,
-            method = _ref.method;
+        var previousState = currentState;
+        currentState = store.getState();
+        subscriptionQueue.forEach(function (_ref) {
+          var observed = _ref.observed,
+              passive = _ref.passive,
+              method = _ref.method;
 
-        if (isObservedChanged(observed(previousState), observed(currentState))) {
-          method.call(_this, Object.assign({}, observed(currentState), passive(currentState)));
-        }
-      });
+          if (isObservedChanged(observed(previousState), observed(currentState))) {
+            method.call(_this, Object.assign({}, observed(currentState), passive(currentState)));
+          }
+        });
+      };
     }
 
     var _target$prototype = target.prototype,
@@ -38,7 +40,7 @@ function AttachStore(store) {
 
     target.prototype.init = function init() {
       originalInit.call(this);
-      this.unsubscribe = store.subscribe(handleStoreChange.bind(this));
+      this.unsubscribe = store.subscribe(handleStoreChangeWrapper().bind(this));
     }; // eslint-disable-next-line no-param-reassign
 
 
