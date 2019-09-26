@@ -16,7 +16,7 @@ function AttachStore(store) {
             method.call(this, Object.assign({}, observed(currentState), passive(currentState)));
           }
         });
-      }
+      };
     }
 
     const {
@@ -26,6 +26,19 @@ function AttachStore(store) {
 
     // eslint-disable-next-line no-param-reassign
     target.prototype.init = function init() {
+      const currentState = store.getState();
+
+      subscriptionQueue.forEach(({
+        observed,
+        passive,
+        method,
+        shouldTriggerOnInit,
+      }) => {
+        if (shouldTriggerOnInit) {
+          method.call(this, Object.assign({}, observed(currentState), passive(currentState)));
+        }
+      });
+
       originalInit.call(this);
       this.unsubscribe = store.subscribe(handleStoreChangeWrapper().bind(this));
     };

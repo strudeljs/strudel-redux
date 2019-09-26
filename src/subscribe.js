@@ -1,6 +1,7 @@
 function Subscribe({
   observed,
   passive = () => {},
+  shouldTriggerOnInit = false,
 } = {}) {
   return function addSubscriptionToQueue(target, name, descriptor) {
     if (typeof observed !== 'function') {
@@ -10,6 +11,7 @@ function Subscribe({
     const queueElement = {
       observed,
       passive,
+      shouldTriggerOnInit,
       method: descriptor.value,
     };
     if (!target.subscriptionQueue) {
