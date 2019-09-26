@@ -39,6 +39,19 @@ function AttachStore(store) {
         originalBeforeDestroy = _target$prototype.beforeDestroy; // eslint-disable-next-line no-param-reassign
 
     target.prototype.init = function init() {
+      var _this2 = this;
+
+      var currentState = store.getState();
+      subscriptionQueue.forEach(function (_ref2) {
+        var observed = _ref2.observed,
+            passive = _ref2.passive,
+            method = _ref2.method,
+            shouldTriggerOnInit = _ref2.shouldTriggerOnInit;
+
+        if (shouldTriggerOnInit) {
+          method.call(_this2, Object.assign({}, observed(currentState), passive(currentState)));
+        }
+      });
       originalInit.call(this);
       this.unsubscribe = store.subscribe(handleStoreChangeWrapper().bind(this));
     }; // eslint-disable-next-line no-param-reassign
@@ -55,7 +68,9 @@ function Subscribe() {
   var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
       observed = _ref.observed,
       _ref$passive = _ref.passive,
-      passive = _ref$passive === void 0 ? function () {} : _ref$passive;
+      passive = _ref$passive === void 0 ? function () {} : _ref$passive,
+      _ref$shouldTriggerOnI = _ref.shouldTriggerOnInit,
+      shouldTriggerOnInit = _ref$shouldTriggerOnI === void 0 ? false : _ref$shouldTriggerOnI;
 
   return function addSubscriptionToQueue(target, name, descriptor) {
     if (typeof observed !== 'function') {
@@ -66,6 +81,7 @@ function Subscribe() {
     var queueElement = {
       observed: observed,
       passive: passive,
+      shouldTriggerOnInit: shouldTriggerOnInit,
       method: descriptor.value
     };
 
