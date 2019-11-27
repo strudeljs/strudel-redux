@@ -42,6 +42,7 @@ function AttachStore(store) {
       var _this2 = this;
 
       var currentState = store.getState();
+      originalInit.call(this);
       subscriptionQueue.forEach(function (_ref2) {
         var observed = _ref2.observed,
             passive = _ref2.passive,
@@ -52,7 +53,6 @@ function AttachStore(store) {
           method.call(_this2, Object.assign({}, observed(currentState), passive(currentState)));
         }
       });
-      originalInit.call(this);
       this.unsubscribe = store.subscribe(handleStoreChangeWrapper().bind(this));
     }; // eslint-disable-next-line no-param-reassign
 
