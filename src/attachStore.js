@@ -28,6 +28,7 @@ function AttachStore(store) {
     target.prototype.init = function init() {
       const currentState = store.getState();
 
+      originalInit.call(this);
       subscriptionQueue.forEach(({
         observed,
         passive,
@@ -39,7 +40,6 @@ function AttachStore(store) {
         }
       });
 
-      originalInit.call(this);
       this.unsubscribe = store.subscribe(handleStoreChangeWrapper().bind(this));
     };
 
